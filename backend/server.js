@@ -7,6 +7,10 @@ import bodyParser from "body-parser";
 import colors from "colors";
 import connectDatabase from "./config/db.js";
 import authRoutes from "./routes/authRoutes.js";
+import ingestionRoutes from "./routes/ingestionRoutes.js";
+import reviewRoutes from "./routes/reviewRoutes.js";
+import deckRoutes from "./routes/deckRoutes.js";
+import statsRoutes from "./routes/statsRoutes.js";
 
 const app = express();
 
@@ -28,6 +32,10 @@ app.get("/", (req, res) =>
 
 
 app.use("/api/auth", authRoutes);
+app.use("/api/ingestion", ingestionRoutes);
+app.use("/api/reviews", reviewRoutes);
+app.use("/api/decks", deckRoutes);
+app.use("/api/stats", statsRoutes);
 
 
 const PORT = process.env.PORT || 5000;
