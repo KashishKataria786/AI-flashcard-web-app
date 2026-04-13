@@ -72,7 +72,7 @@ export const processPDFUpload = async (req, res) => {
     }
 
     // Step 6: Save Deck + Flashcards to MongoDB
-    const ownerId = req.user?._id || '65f0b1a20c3d5e0f1a2b3c4d'; // fallback for dev without auth
+    const ownerId = req.user._id;
 
     const newDeck = await Deck.create({
       title,
@@ -174,7 +174,7 @@ export const processTextUpload = async (req, res) => {
     }
 
     // Step 6: Save Deck + Flashcards to MongoDB
-    const ownerId = req.user?._id || '65f0b1a20c3d5e0f1a2b3c4d'; // fallback for dev without auth
+    const ownerId = req.user._id;
 
     const newDeck = await Deck.create({
       title,
@@ -255,7 +255,7 @@ export const processTextUploadAgain = async (req, res) => {
     }
 
     // Save Deck + Flashcards to MongoDB
-    const ownerId = req.user?._id || '65f0b1a20c3d5e0f1a2b3c4d'; // fallback for dev without auth
+    const ownerId = req.user._id;
 
     const newDeck = await Deck.create({
       title,

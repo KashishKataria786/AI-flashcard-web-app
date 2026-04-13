@@ -9,7 +9,7 @@ import mongoose from 'mongoose';
  */
 export const getGlobalStats = async (req, res) => {
   try {
-    const userId = req.user?._id || '65f0b1a20c3d5e0f1a2b3c4d';
+    const userId = req.user._id;
 
     // 1. Mastery Breakdown (Current State)
     const breakdown = await ReviewState.aggregate([
@@ -64,7 +64,7 @@ export const getGlobalStats = async (req, res) => {
 export const getDeckStats = async (req, res) => {
   try {
     const { deckId } = req.params;
-    const userId = req.user?._id || '65f0b1a20c3d5e0f1a2b3c4d';
+    const userId = req.user._id;
 
     const breakdown = await ReviewState.aggregate([
       { 

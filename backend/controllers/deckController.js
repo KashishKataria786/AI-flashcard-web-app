@@ -10,7 +10,7 @@ import { generateFlashcardsFromChunk } from '../services/huggingFaceService.js';
  */
 export const getAllDecks = async (req, res) => {
   try {
-    const userId = req.user?._id || '65f0b1a20c3d5e0f1a2b3c4d';
+    const userId = req.user._id;
     const decks = await Deck.find({ ownerId: userId }).sort({ createdAt: -1 });
     
     // Embed the actual flashcards into each deck object so the frontend can calculate counts/types
@@ -34,6 +34,9 @@ export const getDeckById = async (req, res) => {
     try {
       const deck = await Deck.findById(req.params.id);
       if (!deck) return res.status(404).json({ message: 'Deck not found' });
+      if (deck.ownerId.toString() !== req.user._id.toString()) {
+        return res.status(403).json({ message: 'Access denied. This deck does not belong to you.' });
+      }
       res.status(200).json(deck);
     } catch (error) {
       res.status(500).json({ message: 'Server error' });
@@ -52,6 +55,10 @@ export const regenerateDeck = async (req, res) => {
 
     if (!deck) {
       return res.status(404).json({ message: 'Deck not found.' });
+    }
+
+    if (deck.ownerId.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: 'Access denied. This deck does not belong to you.' });
     }
 
     if (!deck.sourceText || deck.sourceText.length < 50) {
@@ -127,6 +134,10 @@ export const deleteDeck = async (req, res) => {
 
     if (!deck) {
       return res.status(404).json({ message: 'Deck not found.' });
+    }
+
+    if (deck.ownerId.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: 'Access denied. This deck does not belong to you.' });
     }
 
     await Flashcard.deleteMany({ deckId: id });

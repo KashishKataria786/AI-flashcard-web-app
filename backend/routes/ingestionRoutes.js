@@ -1,6 +1,7 @@
 import express from 'express';
 import multer from 'multer';
 import { processPDFUpload, processTextUploadAgain, parsePDFOnly } from '../controllers/ingestionController.js';
+import authMiddleware from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
@@ -18,12 +19,12 @@ const upload = multer({
 });
 
 // POST /api/ingestion/pdf
-router.post('/pdf', upload.single('pdf'), processPDFUpload);
+router.post('/pdf', authMiddleware, upload.single('pdf'), processPDFUpload);
 
 // POST /api/ingestion/text
-router.post('/text', processTextUploadAgain);
+router.post('/text', authMiddleware, processTextUploadAgain);
 
 // POST /api/ingestion/parse-pdf - Debugging/Screening Route
-router.post('/parse-pdf', upload.single('pdf'), parsePDFOnly);
+router.post('/parse-pdf', authMiddleware, upload.single('pdf'), parsePDFOnly);
 
 export default router;

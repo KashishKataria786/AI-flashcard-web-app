@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { FiUploadCloud, FiFile, FiX, FiZap, FiCheckCircle, FiAlertCircle, FiType } from 'react-icons/fi';
 import { uploadPDFAPI, uploadTextAPI, parsePDFOnlyAPI } from '../../api/decks';
 
-const CARD_COUNTS = [10, 20, 50];
+const CARD_COUNTS = [10, 20 ];
 
 const DeckDropzone = ({ onDeckCreated }) => {
   const [inputType, setInputType] = useState('pdf'); // 'pdf' | 'text'

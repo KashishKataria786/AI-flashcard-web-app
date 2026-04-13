@@ -1,11 +1,12 @@
 import express from 'express';
 import { getAllDecks, getDeckById, regenerateDeck, deleteDeck } from '../controllers/deckController.js';
+import authMiddleware from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
-router.get('/', getAllDecks);
-router.get('/:id', getDeckById);
-router.post('/:id/regenerate', regenerateDeck);
-router.delete('/:id', deleteDeck);
+router.get('/', authMiddleware, getAllDecks);
+router.get('/:id', authMiddleware, getDeckById);
+router.post('/:id/regenerate', authMiddleware, regenerateDeck);
+router.delete('/:id', authMiddleware, deleteDeck);
 
 export default router;

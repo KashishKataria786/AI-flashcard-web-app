@@ -11,8 +11,7 @@ import { calculateSM2 } from '../services/srsService.js';
 export const getDueCards = async (req, res) => {
   try {
     const { deckId } = req.params;
-    // For now, using a hardcoded ownerId until auth is fully integrated for this route
-    const userId = req.user?._id || '65f0b1a20c3d5e0f1a2b3c4d'; 
+    const userId = req.user._id;
 
     // Find all cards in the deck
     const allCards = await Flashcard.find({ deckId });
@@ -69,7 +68,7 @@ export const submitReview = async (req, res) => {
   try {
     const { cardId } = req.params;
     const { rating, deckId } = req.body;
-    const userId = req.user?._id || '65f0b1a20c3d5e0f1a2b3c4d';
+    const userId = req.user._id;
 
     if (rating === undefined || rating < 0 || rating > 5) {
       return res.status(400).json({ message: 'Rating required (0-5).' });
