@@ -1,6 +1,14 @@
-import { Link } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 
 const HomePage = () => {
+  const { token, loading } = useAuth();
+
+  // If auth is resolved and user is logged in, redirect to dashboard
+  if (!loading && token) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
   return (
     <div className="w-full flex justify-center py-20 px-4 sm:px-6 lg:px-8">
       <div className="max-w-5xl w-full text-center">
@@ -15,12 +23,21 @@ const HomePage = () => {
         </p>
 
         <div className="flex justify-center mb-24">
-          <Link
-            to="/register"
-            className="px-8 py-4 bg-[#ffb800] hover:bg-[#e6a600] text-black font-bold text-lg uppercase tracking-wide border-2 border-transparent hover:border-black transition-all"
-          >
-            Get Started
-          </Link>
+          {token ? (
+            <Link
+              to="/dashboard"
+              className="px-8 py-4 bg-[#ffb800] hover:bg-[#e6a600] text-black font-bold text-lg uppercase tracking-wide border-2 border-transparent hover:border-black transition-all"
+            >
+              Go to Dashboard
+            </Link>
+          ) : (
+            <Link
+              to="/register"
+              className="px-8 py-4 bg-[#ffb800] hover:bg-[#e6a600] text-black font-bold text-lg uppercase tracking-wide border-2 border-transparent hover:border-black transition-all"
+            >
+              Get Started
+            </Link>
+          )}
         </div>
 
         {/* Mock Content Grid below Hero */}
