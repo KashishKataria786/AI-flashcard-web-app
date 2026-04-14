@@ -143,3 +143,18 @@ export const deleteDeckAPI = async (deckId) => {
     throw new Error(error.response?.data?.message || error.message || 'Error occurred');
   }
 };
+/**
+ * Export a deck to PDF.
+ * @param {string} deckId - The deck ID
+ */
+export const exportDeckAPI = async (deckId) => {
+  try {
+    const response = await API.get(`/decks/${deckId}/export`, {
+      headers: getAuthHeaders(),
+      responseType: 'blob' // Important for binary data
+    });
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.message || error.message || 'Error occurred during export');
+  }
+};

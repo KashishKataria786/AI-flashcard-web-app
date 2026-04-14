@@ -1,9 +1,9 @@
 
 import { motion} from 'framer-motion';
-import {FiLayers, FiBookOpen,  FiTrash2} from 'react-icons/fi';
+import {FiLayers, FiBookOpen, FiTrash2, FiDownload} from 'react-icons/fi';
 
 
-const DeckCard = ({ deck, onStudy, onRegenerate,  onDelete }) => {
+const DeckCard = ({ deck, onStudy, onRegenerate, onDelete, onExport }) => {
   const memorize = (deck.cards || []).filter((c) => c.type === 'Memorize').length;
   const qa = (deck.cards || []).filter((c) => c.type === 'QA').length;
 
@@ -30,6 +30,13 @@ const DeckCard = ({ deck, onStudy, onRegenerate,  onDelete }) => {
             title="Delete Deck"
           >
             <FiTrash2 className="w-4 h-4" />
+          </button>
+          <button
+            onClick={(e) => { e.stopPropagation(); onExport(deck); }}
+            className="w-8 h-8 border-2 border-black flex items-center justify-center hover:bg-[#ffb800] hover:text-black transition-colors"
+            title="Export to PDF"
+          >
+            <FiDownload className="w-4 h-4" />
           </button>
           <span className="text-xs font-bold text-gray-400 uppercase tracking-widest pt-1">
             {deck.cards?.length || 0} cards

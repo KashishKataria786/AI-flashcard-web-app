@@ -5,7 +5,7 @@ import DeckDropzone from '../../components/study/DeckDropzone';
 import FlipCard from '../../components/study/FlipCard';
 import AnimatedModal from '../../components/common/AnimatedModal';
 import { 
-  uploadPDFAPI, fetchDecksAPI, fetchDueCardsAPI, submitReviewAPI, deleteDeckAPI 
+  uploadPDFAPI, fetchDecksAPI, fetchDueCardsAPI, submitReviewAPI, deleteDeckAPI, exportDeckAPI, regenerateDeckAPI
 } from '../../api/decks';
 import DeckCard from '../../components/common/DeckCard'
 import StudySession  from '../../components/common/StudySession'
@@ -71,6 +71,27 @@ const FlashcardsPage = () => {
       alert('Deletion failed: ' + err.message);
     } finally {
       setIsDeleting(false);
+    }
+  };
+
+  const handleExportDeck = async (deck) => {
+    try {
+      const blob = await exportDeckAPI(deck._id);
+      
+      // Create a link element to trigger the download
+      const url = window.URL.createObjectURL(new Blob([blob]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `${deck.title.replace(/\s+/g, '_')}_Flashcards.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      
+      // Clean up
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Export failed:', err);
+      alert('Export failed: ' + err.message);
     }
   };
 
@@ -198,12 +219,13 @@ const FlashcardsPage = () => {
                     visible: { opacity: 1, scale: 1 },
                   }}
                 >
-                  <DeckCard 
-                    deck={deck} 
-                    onStudy={setActiveStudyDeck} 
-                    onRegenerate={setRegeneratingDeck}
-                    onDelete={setDeletingDeck}
-                  />
+                    <DeckCard 
+                      deck={deck} 
+                      onStudy={setActiveStudyDeck} 
+                      onRegenerate={setRegeneratingDeck}
+                      onDelete={setDeletingDeck}
+                      onExport={handleExportDeck}
+                    />
                 </motion.div>
               ))}
             </motion.div>

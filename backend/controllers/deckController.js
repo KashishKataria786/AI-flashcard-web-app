@@ -3,6 +3,7 @@ import Flashcard from '../models/Flashcard.js';
 import ReviewState from '../models/ReviewState.js';
 import { chunkText } from '../services/pdfService.js';
 import { generateFlashcardsFromChunk } from '../services/huggingFaceService.js';
+import { generateDeckPDF } from '../services/pdfExportService.js';
 
 /**
  * GET /api/decks
@@ -150,5 +151,43 @@ export const deleteDeck = async (req, res) => {
   } catch (error) {
     console.error('Error deleting deck:', error);
     res.status(500).json({ message: 'Server error during deletion.' });
+  }
+};
+
+/**
+ * GET /api/decks/:id/export
+ * Generates and downloads a PDF of the flashcards in a deck.
+ */
+export const exportDeckToPDF = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const deck = await Deck.findById(id);
+
+    if (!deck) {
+      return res.status(404).json({ message: 'Deck not found.' });
+    }
+
+    if (deck.ownerId.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: 'Access denied. This deck does not belong to you.' });
+    }
+
+    const cards = await Flashcard.find({ deckId: id });
+
+    if (!cards || cards.length === 0) {
+      return res.status(400).json({ message: 'This deck has no cards to export.' });
+    }
+
+    // Set headers for PDF download
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename=${deck.title.replace(/\s+/g, '_')}_Flashcards.pdf`);
+
+    // Generate and stream PDF
+    generateDeckPDF(deck, cards, res);
+
+  } catch (error) {
+    console.error('Error exporting deck to PDF:', error);
+    if (!res.headersSent) {
+      res.status(500).json({ message: 'Server error during PDF export.' });
+    }
   }
 };
