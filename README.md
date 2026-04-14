@@ -1,6 +1,6 @@
 # Cuemath AI Flashcard Web App 🚀
 
-![Banner](./frontend/public/readme-hero.png)
+![Banner](./frontend/public/readme-heror.png)
 
 [![License: ISC](https://img.shields.io/badge/License-ISC-blue.svg)](https://opensource.org/licenses/ISC)
 [![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=white)](https://react.dev/)
@@ -12,22 +12,21 @@ An intelligent, full-stack learning platform that transforms complex documents i
 
 ---
 
-## ✨ Features
+## ✨ Core Features
 
-### 🧠 AI-Powered Ingestion
-- **PDF to Flashcards**: Upload complex PDFs and watch the AI extract key concepts into `Memorize` and `Q&A` cards.
-- **Direct Text Input**: Paste your revision notes and generate specialized study decks in seconds.
-- **Intelligent Chunking**: Large documents are smart-chunked to respect LLM context windows while maintaining semantic flow.
+### 🧠 High-Fidelity AI Ingestion
+- **PDF to Flashcards**: Upload complex academic PDFs and extract key concepts into `Memorize` and `Q&A` cards.
+- **Verify Content Flow**: High-fidelity "Parse -> Review -> Generate" workflow ensures AI quality before cards hit your library.
+- **Smart Chunking**: Optimized for large documents to ensure stability and speed.
 
-### 📈 Smart Learning & Analytics
-- **SM-2 Algorithm**: Implements the SuperMemo-2 Spaced Repetition logic for scientifically optimized review intervals.
-- **Progress Tracking**: Beautiful visualizations via **Recharts** showing your study sessions, mastery levels, and daily streaks.
-- **Mastery Levels**: Cards progress from *Learning* to *Mastered* based on your performance.
+### 📈 Analytics & Spaced Repetition
+- **SM-2 Algorithm**: Scientifically optimized review intervals that adapt to your performance.
+- **7-Day Activity Tracker**: Custom activity grid on every deck card to visualize your practice consistency.
+- **Mastery Levels**: Real-time progress tracking from *Learning* to *Mastered*.
 
 ### 🎨 Premium UI/UX
-- **Cuemath Branded**: A high-fidelity interface with a professional color palette, vibrant icons, and glassmorphism.
-- **Vite-Powered**: Blazing fast frontend performance with React 19 and Tailwind CSS 4.
-- **Responsive Design**: Fully optimized for desktop and mobile learning.
+- **Cuemath Branded**: A high-fidelity interface with a professional color palette and glassmorphism.
+- **Vite-Powered**: Ultra-fast performance with React 19 and Tailwind CSS 4.0.
 
 ---
 
@@ -96,13 +95,23 @@ npm run dev
 
 ---
 
+## 🔮 Future Iterations & Improvements
+> [!NOTE]
+> The following features are currently under consideration for future releases:
+
+- **AI-Generated Study Guides**: Ability to generate comprehensive Markdown-based study notes alongside flashcard decks.
+- **Collaborative Decks**: Public sharing and collaborative editing of AI-generated materials.
+- **Export Ecosystem**: Direct export to Anki or PDF for offline study.
+
+---
+
 ## 📖 Usage Guide
 
 1.  **Sign Up/Login**: Create your personalized learning account.
 2.  **Create a Deck**: Go to the *Flashcards* section and upload a PDF or paste text.
-3.  **Review AI Cards**: Edit the generated cards if necessary.
-4.  **Start Studying**: Click "Study Session" and rate your performance (0-5) for each card.
-5.  **Track Progress**: Check the *Dashboard* to see your mastery growth and upcoming reviews.
+3.  **Review AI Cards**: Edit or delete cards in the preview modal.
+4.  **Start Studying**: Rate your performance (0-5) to trigger the SM-2 algorithm.
+5.  **Track Progress**: Watch your 7-day consistency and mastery grow on the Dashboard.
 
 ---
 
