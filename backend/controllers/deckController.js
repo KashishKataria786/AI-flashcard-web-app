@@ -1,6 +1,8 @@
 import Deck from '../models/Deck.js';
 import Flashcard from '../models/Flashcard.js';
 import ReviewState from '../models/ReviewState.js';
+import ReviewLog from '../models/ReviewLog.js';
+import mongoose from 'mongoose';
 import { chunkText } from '../services/pdfService.js';
 import { generateFlashcardsFromChunk } from '../services/huggingFaceService.js';
 import { generateDeckPDF } from '../services/pdfExportService.js';
@@ -14,10 +16,53 @@ export const getAllDecks = async (req, res) => {
     const userId = req.user._id;
     const decks = await Deck.find({ ownerId: userId }).sort({ createdAt: -1 });
     
-    // Embed the actual flashcards into each deck object so the frontend can calculate counts/types
+    // 1. Get 7-day activity for ALL decks in one aggregation for efficiency
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    
+    const activityLogs = await ReviewLog.aggregate([
+      { 
+        $match: { 
+          userId: new mongoose.Types.ObjectId(userId),
+          createdAt: { $gte: sevenDaysAgo }
+        } 
+      },
+      {
+        $group: {
+          _id: { 
+            deckId: "$deckId", 
+            day: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } } 
+          }
+        }
+      }
+    ]);
+
     const decksWithCards = await Promise.all(decks.map(async (deck) => {
       const cards = await Flashcard.find({ deckId: deck._id });
-      return { ...deck.toObject(), cards };
+      
+      // Calculate Mastery & Studied Percentages
+      const reviewStates = await ReviewState.find({ deckId: deck._id, userId });
+      const masteredCount = reviewStates.filter(s => s.status === 'Mastered').length;
+      const studiedCount = reviewStates.length; // Any card with a state has been seen/studied
+
+      const masteryScore = cards.length > 0 ? Math.round((masteredCount / cards.length) * 100) : 0;
+      const studiedScore = cards.length > 0 ? Math.round((studiedCount / cards.length) * 100) : 0;
+
+      // Calculate 7-day activity array
+      const deckActivity = [];
+      const today = new Date();
+      for (let i = 6; i >= 0; i--) {
+        const d = new Date(today);
+        d.setDate(d.getDate() - i);
+        const dateStr = d.toISOString().split('T')[0];
+        const isActive = activityLogs.some(log => 
+          log._id.deckId.toString() === deck._id.toString() && 
+          log._id.day === dateStr
+        );
+        deckActivity.push(isActive);
+      }
+
+      return { ...deck.toObject(), cards, masteryScore, studiedScore, activity: deckActivity };
     }));
 
     res.status(200).json(decksWithCards);
@@ -189,5 +234,98 @@ export const exportDeckToPDF = async (req, res) => {
     if (!res.headersSent) {
       res.status(500).json({ message: 'Server error during PDF export.' });
     }
+  }
+};
+/**
+ * GET /api/decks/search?q=...
+ * Searches decks by title, tags, OR flashcard content (front/back).
+ */
+export const searchDecks = async (req, res) => {
+  try {
+    const { q } = req.query;
+    const userId = req.user._id;
+
+    if (!q || q.trim().length === 0) {
+      return res.status(400).json({ message: 'Search query is required.' });
+    }
+
+    console.log(`[Search] Query: "${q}" received from User: ${userId}`);
+
+    const regex = new RegExp(q, 'i');
+
+    // 1. Find cards matching the query
+    const matchingCards = await Flashcard.find({
+      $or: [
+        { front: regex },
+        { back: regex }
+      ]
+    }).select('deckId');
+
+    const cardDeckIds = [...new Set(matchingCards.map(c => c.deckId.toString()))];
+
+    // 2. Find decks matching the query (Title, Tags, or contains matching cards)
+    const matchingDecks = await Deck.find({
+      ownerId: userId,
+      $or: [
+        { title: regex },
+        { tags: regex },
+        { _id: { $in: cardDeckIds } }
+      ]
+    }).sort({ createdAt: -1 });
+
+    // 3. Get 7-day activity for these matches
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    const activityLogs = await ReviewLog.aggregate([
+      { 
+        $match: { 
+          userId: new mongoose.Types.ObjectId(userId),
+          deckId: { $in: matchingDecks.map(d => d._id) },
+          createdAt: { $gte: sevenDaysAgo }
+        } 
+      },
+      {
+        $group: {
+          _id: { 
+            deckId: "$deckId", 
+            day: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } } 
+          }
+        }
+      }
+    ]);
+
+    // 4. Populate cards, mastery, and activity for the frontend
+    const decksWithCards = await Promise.all(matchingDecks.map(async (deck) => {
+      const cards = await Flashcard.find({ deckId: deck._id });
+      
+      // Calculate Mastery & Studied Percentages for search results
+      const reviewStates = await ReviewState.find({ deckId: deck._id, userId });
+      const masteredCount = reviewStates.filter(s => s.status === 'Mastered').length;
+      const studiedCount = reviewStates.length;
+
+      const masteryScore = cards.length > 0 ? Math.round((masteredCount / cards.length) * 100) : 0;
+      const studiedScore = cards.length > 0 ? Math.round((studiedCount / cards.length) * 100) : 0;
+
+      // Calculate 7-day activity array
+      const deckActivity = [];
+      const today = new Date();
+      for (let i = 6; i >= 0; i--) {
+        const d = new Date(today);
+        d.setDate(d.getDate() - i);
+        const dateStr = d.toISOString().split('T')[0];
+        const isActive = activityLogs.some(log => 
+          log._id.deckId.toString() === deck._id.toString() && 
+          log._id.day === dateStr
+        );
+        deckActivity.push(isActive);
+      }
+
+      return { ...deck.toObject(), cards, masteryScore, studiedScore, activity: deckActivity };
+    }));
+
+    res.status(200).json(decksWithCards);
+  } catch (error) {
+    console.error('Error searching decks:', error);
+    res.status(500).json({ message: 'Server error during search.' });
   }
 };

@@ -5,9 +5,10 @@ import DeckDropzone from '../../components/study/DeckDropzone';
 import FlipCard from '../../components/study/FlipCard';
 import AnimatedModal from '../../components/common/AnimatedModal';
 import { 
-  uploadPDFAPI, fetchDecksAPI, fetchDueCardsAPI, submitReviewAPI, deleteDeckAPI, exportDeckAPI, regenerateDeckAPI
+  uploadPDFAPI, fetchDecksAPI, fetchDueCardsAPI, submitReviewAPI, deleteDeckAPI, exportDeckAPI, regenerateDeckAPI, searchDecksAPI
 } from '../../api/decks';
-import DeckCard from '../../components/common/DeckCard'
+import DeckCard from '../../components/common/DeckCard';
+import LoadingSpinner from '../../components/common/LoadingSpinner';
 import StudySession  from '../../components/common/StudySession'
 
 // ─── Main Flashcards Page ──────────────────────────────────────────────────────
@@ -16,6 +17,8 @@ const FlashcardsPage = () => {
   const [activeStudyDeck, setActiveStudyDeck] = useState(null);
   const [showUpload, setShowUpload] = useState(false);
   const [filterType, setFilterType] = useState('all'); // all | Memorize | QA
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isSearching, setIsSearching] = useState(false);
   const [loading, setLoading] = useState(true);
 
   // Operation states
@@ -39,6 +42,27 @@ const FlashcardsPage = () => {
   useEffect(() => {
     loadDecks();
   }, [loadDecks]);
+
+  // Debounced search
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(async () => {
+      if (searchQuery.trim()) {
+        try {
+          setIsSearching(true);
+          const results = await searchDecksAPI(searchQuery);
+          setDecks(results || []);
+        } catch (err) {
+          console.error('Search failed:', err);
+        } finally {
+          setIsSearching(false);
+        }
+      } else {
+        loadDecks();
+      }
+    }, 400);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchQuery, loadDecks]);
 
   const handleDeckCreated = useCallback((result) => {
     // result.deck structure matches mongo document
@@ -96,6 +120,8 @@ const FlashcardsPage = () => {
   };
 
   const filteredDecks = decks.filter((deck) => {
+    // If searching, show all matches regardless of type filter to avoid confusion
+    if (searchQuery.trim().length > 0) return true;
     if (filterType === 'all') return true;
     return (deck.cards || []).some(c => c.type === filterType);
   });
@@ -165,41 +191,78 @@ const FlashcardsPage = () => {
                 <span className="ml-2 text-sm text-gray-400 font-bold normal-case tracking-normal">{decks.length} total</span>
               </h2>
             </div>
-            {/* Filter Tabs */}
-            <div className="flex items-center gap-1 border-2 border-black p-1 bg-gray-50">
-              {['all', 'Memorize', 'QA'].map((f) => (
-                <button
-                  key={f}
-                  onClick={() => setFilterType(f)}
-                  className={`px-4 py-2 text-[10px] font-black uppercase tracking-widest transition-all ${
-                    filterType === f 
-                      ? 'bg-black text-[#ffb800]' 
-                      : 'text-gray-400 hover:text-black hover:bg-white'
-                  }`}
-                >
-                  {f === 'all' ? 'All' : f}
-                </button>
-              ))}
+            
+            <div className="flex flex-col sm:flex-row items-center gap-4">
+              {/* Deep Search Bar */}
+              <div className="relative group w-full sm:w-64">
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search decks or cards..."
+                  className="w-full px-4 py-2 bg-white border-2 border-black text-xs font-bold outline-none placeholder:text-gray-300 focus:shadow-[4px_4px_0px_0px_rgba(255,184,0,1)] transition-all"
+                />
+                {isSearching && (
+                  <div className="absolute right-3 top-2.5">
+                    <FiRefreshCw className="w-3 h-3 animate-spin text-[#ffb800]" />
+                  </div>
+                )}
+              </div>
+
+              {/* Filter Tabs */}
+              <div className="flex items-center gap-1 border-2 border-black p-1 bg-gray-50">
+                {['all', 'Memorize', 'QA'].map((f) => (
+                  <button
+                    key={f}
+                    onClick={() => setFilterType(f)}
+                    className={`px-4 py-2 text-[10px] font-black uppercase tracking-widest transition-all ${
+                      filterType === f 
+                        ? 'bg-black text-[#ffb800]' 
+                        : 'text-gray-400 hover:text-black hover:bg-white'
+                    }`}
+                  >
+                    {f === 'all' ? 'All' : f}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
 
-          {filteredDecks.length === 0 ? (
-            <div className="border-2 border-dashed border-gray-200 py-24 flex flex-col items-center justify-center gap-6 text-center">
-              <div className="w-16 h-16 border-2 border-gray-200 flex items-center justify-center bg-gray-50">
-                <FiLayers className="w-8 h-8 text-gray-300" />
+          {loading ? (
+            <div className="col-span-full">
+              <LoadingSpinner message="Fetching your library..." />
+            </div>
+          ) : filteredDecks.length === 0 ? (
+            <div className="border-2 border-dashed border-gray-200 py-24 flex flex-col items-center justify-center gap-6 text-center bg-gray-50/30">
+              <div className="w-16 h-16 border-2 border-gray-200 flex items-center justify-center bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,0.05)]">
+                {searchQuery ? <FiAlertTriangle className="w-8 h-8 text-[#ffb800]" /> : <FiLayers className="w-8 h-8 text-gray-300" />}
               </div>
               <div className="space-y-2">
-                <p className="font-black text-black text-xl uppercase tracking-tight">Your library is empty</p>
+                <p className="font-black text-black text-xl uppercase tracking-tight">
+                  {searchQuery ? 'No Content Found' : 'Your library is empty'}
+                </p>
                 <p className="text-sm text-gray-500 font-medium max-w-sm mx-auto">
-                  Upload a PDF document to generate your first AI-powered study deck.
+                  {searchQuery 
+                    ? `We couldn't find any decks or flashcards matching "${searchQuery}". Try a different keyword.` 
+                    : 'Upload a PDF document to generate your first AI-powered study deck.'}
                 </p>
               </div>
-              <button
-                onClick={() => setShowUpload(true)}
-                className="px-8 py-3 bg-black text-[#ffb800] border-2 border-black font-black text-xs uppercase tracking-widest hover:bg-white hover:text-black transition-all"
-              >
-                Upload Document
-              </button>
+              
+              {searchQuery ? (
+                <button
+                  onClick={() => setSearchQuery('')}
+                  className="px-8 py-3 bg-black text-[#ffb800] border-2 border-black font-black text-xs uppercase tracking-widest hover:bg-[#ffb800] hover:text-black transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+                >
+                  Clear Search
+                </button>
+              ) : (
+                <button
+                  onClick={() => setShowUpload(true)}
+                  className="px-8 py-3 bg-black text-[#ffb800] border-2 border-black font-black text-xs uppercase tracking-widest hover:bg-white hover:text-black transition-all"
+                >
+                  Upload Document
+                </button>
+              )}
             </div>
           ) : (
             <motion.div

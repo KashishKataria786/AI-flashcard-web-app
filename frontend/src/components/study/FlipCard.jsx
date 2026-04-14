@@ -92,36 +92,44 @@ const FlipCard = ({ card, index, total, onRate }) => {
           {/* Rating Controls */}
           <div className="mt-8 pt-6 border-t-2 border-dashed border-gray-200">
              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 text-center mb-4">How well did you recall?</p>
-             <div className="grid grid-cols-4 gap-2">
-                <button 
+              <div className="grid grid-cols-4 gap-2">
+                <motion.button 
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                   onClick={(e) => handleRate(e, 1)}
                   className="flex flex-col items-center gap-1 p-2 border-2 border-black hover:bg-red-500 hover:text-white transition-colors group"
                 >
                   <span className="font-black text-xs uppercase">Again</span>
                   <span className="text-[8px] font-bold opacity-50"> 1m</span>
-                </button>
-                <button 
+                </motion.button>
+                <motion.button 
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                   onClick={(e) => handleRate(e, 3)}
                   className="flex flex-col items-center gap-1 p-2 border-2 border-black hover:bg-orange-500 hover:text-white transition-colors"
                 >
                   <span className="font-black text-xs uppercase">Hard</span>
                   <span className="text-[8px] font-bold opacity-50">2d</span>
-                </button>
-                <button 
+                </motion.button>
+                <motion.button 
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                   onClick={(e) => handleRate(e, 4)}
                   className="flex flex-col items-center gap-1 p-2 border-2 border-black hover:bg-blue-500 hover:text-white transition-colors"
                 >
                   <span className="font-black text-xs uppercase">Good</span>
                   <span className="text-[8px] font-bold opacity-50">4d</span>
-                </button>
-                <button 
+                </motion.button>
+                <motion.button 
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                   onClick={(e) => handleRate(e, 5)}
                   className="flex flex-col items-center gap-1 p-2 border-2 border-black hover:bg-green-500 hover:text-white transition-colors"
                 >
                   <span className="font-black text-xs uppercase">Easy</span>
                   <span className="text-[8px] font-bold opacity-50">1w</span>
-                </button>
-             </div>
+                </motion.button>
+              </div>
           </div>
         </div>
       </motion.div>

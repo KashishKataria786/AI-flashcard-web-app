@@ -4,11 +4,14 @@ import { FiLayout } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
 import StatsOverview from '../../components/dashboard/StatsOverview';
 import AnalyticsSection from '../../components/dashboard/AnalyticsSection';
-import { fetchGlobalStatsAPI } from '../../api/stats';
+import { fetchGlobalStatsAPI, fetchHeatmapAPI } from '../../api/stats';
+import LoadingSpinner from '../../components/common/LoadingSpinner';
 
 const OverviewPage = () => {
   const [stats, setStats] = useState(null);
+  const [heatmapData, setHeatmapData] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadingHeatmap, setLoadingHeatmap] = useState(true);
   const navigate = useNavigate();
 
   const loadStats = useCallback(async () => {
@@ -23,9 +26,22 @@ const OverviewPage = () => {
     }
   }, []);
 
+  const loadHeatmap = useCallback(async () => {
+    try {
+      setLoadingHeatmap(true);
+      const data = await fetchHeatmapAPI();
+      setHeatmapData(data);
+    } catch (err) {
+      console.error('Failed to fetch heatmap data:', err);
+    } finally {
+      setLoadingHeatmap(false);
+    }
+  }, []);
+
   useEffect(() => {
     loadStats();
-  }, [loadStats]);
+    loadHeatmap();
+  }, [loadStats, loadHeatmap]);
 
   return (
     <div className="space-y-10 pb-12">
@@ -55,7 +71,11 @@ const OverviewPage = () => {
             <div className="w-2 h-6 bg-[#ffb800]"></div>
             <h2 className="text-xl font-black uppercase tracking-tight">At a Glance</h2>
           </div>
-          <StatsOverview stats={stats} loading={loading} />
+          {loading ? (
+            <LoadingSpinner message="Calculating global metrics..." />
+          ) : (
+            <StatsOverview stats={stats} />
+          )}
         </div>
 
         <div className="space-y-6">
@@ -63,7 +83,12 @@ const OverviewPage = () => {
             <div className="w-2 h-6 bg-black"></div>
             <h2 className="text-xl font-black uppercase tracking-tight">Learning Insights</h2>
           </div>
-          <AnalyticsSection stats={stats} loading={loading} />
+          <AnalyticsSection 
+            stats={stats} 
+            loading={loading} 
+            heatmapData={heatmapData} 
+            loadingHeatmap={loadingHeatmap} 
+          />
         </div>
       </section>
     </div>

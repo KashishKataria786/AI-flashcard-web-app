@@ -1,4 +1,5 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
+import confetti from 'canvas-confetti';
 import { motion, AnimatePresence } from 'framer-motion';
 import {FiPlus, FiLayers, FiChevronLeft, FiChevronRight, FiGrid, FiBookOpen, FiFilter, FiRefreshCw, FiAlertTriangle, FiTrash2, FiPieChart} from 'react-icons/fi';
 import DeckDropzone from '../../components/study/DeckDropzone';
@@ -13,6 +14,19 @@ const StudySession = ({ deckId, deckTitle, onExit }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const [sessionStats, setSessionStats] = useState({ reviewed: 0, memorize: 0, qa: 0 });
+
+  // Sound Effects Refs
+  const successAudio = useRef(new Audio('https://assets.mixkit.co/active_storage/sfx/2013/2013-preview.mp3')); // Soft chime
+  const winAudio = useRef(new Audio('https://assets.mixkit.co/active_storage/sfx/1435/1435-preview.mp3')); // Achievement bell
+
+  const triggerConfetti = () => {
+    confetti({
+      particleCount: 150,
+      spread: 70,
+      origin: { y: 0.6 },
+      colors: ['#ffb800', '#000000', '#ffffff']
+    });
+  };
 
   const loadDueCards = useCallback(async () => {
     try {
@@ -37,13 +51,22 @@ const StudySession = ({ deckId, deckTitle, onExit }) => {
 
   const handleRate = async (cardId, rating) => {
     try {
+      // Play soft success sound
+      successAudio.current.currentTime = 0;
+      successAudio.current.volume = 0.4;
+      successAudio.current.play().catch(e => console.log('Audio blocked:', e));
+
       await submitReviewAPI(cardId, deckId, rating);
       setSessionStats(prev => ({ ...prev, reviewed: prev.reviewed + 1 }));
       
       if (currentIndex < cards.length - 1) {
         setCurrentIndex(prev => prev + 1);
       } else {
-        setCurrentIndex(cards.length); // End of session
+        // Session Finished
+        winAudio.current.currentTime = 0;
+        winAudio.current.play().catch(e => console.log('Audio blocked:', e));
+        triggerConfetti();
+        setCurrentIndex(cards.length);
       }
     } catch (err) {
       console.error('Rating failed:', err);

@@ -58,6 +58,63 @@ const DeckCard = ({ deck, onStudy, onRegenerate, onDelete, onExport }) => {
         <span className="px-2 py-1 bg-black text-white text-xs font-bold">{qa} Q&A</span>
       </div>
 
+      {/* Mastery & Studied Progress Progress */}
+      <div className="space-y-3">
+        <div className="flex justify-between items-end">
+          <div>
+            <span className="block text-[10px] font-black uppercase tracking-widest text-gray-400">Total Progress</span>
+            <div className="flex items-baseline gap-2">
+               <span className="text-2xl font-black text-black">{deck.masteryScore || 0}%</span>
+               <span className="text-[10px] font-bold text-gray-400 uppercase italic">Mastered</span>
+            </div>
+          </div>
+          <div className="text-right">
+             <span className="block text-[10px] font-bold uppercase text-gray-400">{deck.studiedScore || 0}% Studied</span>
+          </div>
+        </div>
+        
+        <div className="relative w-full h-3 bg-gray-100 border-2 border-black overflow-hidden">
+          {/* Studied Progress Layer (Lighter) */}
+          <motion.div 
+            initial={{ width: 0 }}
+            animate={{ width: `${deck.studiedScore || 0}%` }}
+            transition={{ duration: 1, ease: 'easeOut' }}
+            className="absolute top-0 left-0 h-full bg-[#ffb800] opacity-30"
+          />
+          {/* Mastered Progress Layer (Solid) */}
+          <motion.div 
+            initial={{ width: 0 }}
+            animate={{ width: `${deck.masteryScore || 0}%` }}
+            transition={{ duration: 1, ease: 'easeOut', delay: 0.2 }}
+            className={`absolute top-0 left-0 h-full shadow-[2px_0_0_0_rgba(255,184,0,1)] transition-all ${
+              deck.masteryScore === 100 ? 'bg-green-500' : 'bg-[#ffb800]'
+            }`}
+          />
+        </div>
+      </div>
+
+      {/* 7-Day Activity Indicator */}
+      <div className="space-y-2 mt-4 pt-4 border-t-2 border-dashed border-gray-100">
+        <div className="flex justify-between items-center text-[9px] font-black uppercase tracking-widest text-gray-400">
+          <span>Weekly Activity</span>
+          <span className="italic">Last 7 Days</span>
+        </div>
+        <div className="flex justify-between gap-1">
+          {deck.activity?.map((isActive, idx) => (
+            <motion.div
+              key={idx}
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: idx * 0.05 }}
+              className={`flex-1 h-3 border-[1px] border-black/5 rounded-sm transition-all ${
+                isActive ? 'bg-[#ffb800] shadow-[0px_2px_4px_rgba(255,184,0,0.3)]' : 'bg-gray-100'
+              }`}
+              title={idx === 6 ? 'Today' : `${6 - idx} days ago`}
+            />
+          ))}
+        </div>
+      </div>
+
       <button
         onClick={() => onStudy(deck)}
         className="mt-auto w-full py-3 bg-black text-[#ffb800] font-extrabold text-xs uppercase tracking-widest border-2 border-black hover:bg-[#ffb800] hover:text-black transition-all flex items-center justify-center gap-2"

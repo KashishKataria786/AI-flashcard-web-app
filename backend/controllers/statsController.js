@@ -1,6 +1,7 @@
 import ReviewLog from '../models/ReviewLog.js';
 import ReviewState from '../models/ReviewState.js';
 import Deck from '../models/Deck.js';
+import Flashcard from '../models/Flashcard.js';
 import mongoose from 'mongoose';
 
 /**
@@ -39,14 +40,26 @@ export const getGlobalStats = async (req, res) => {
     ]);
 
     // 3. Totals
-    const totalDecks = await Deck.countDocuments({ ownerId: userId });
+    const userDecks = await Deck.find({ ownerId: userId }).select('_id');
+    const deckIds = userDecks.map(d => d._id);
+
+    // Total cards existing in all of user's decks
+    const totalLibraryCards = await Flashcard.countDocuments({ deckId: { $in: deckIds } });
+    
+    // Total cards that have any review progress
+    const totalStudiedCards = await ReviewState.countDocuments({ userId: new mongoose.Types.ObjectId(userId) });
     const totalMastered = breakdown.find(b => b._id === 'Mastered')?.count || 0;
+
+    // Total reviews of all time for this user
+    const totalReviewsAllTime = await ReviewLog.countDocuments({ userId: new mongoose.Types.ObjectId(userId) });
 
     res.status(200).json({
       summary: {
-        totalDecks,
+        totalDecks: userDecks.length,
+        totalCards: totalLibraryCards,
+        totalStudied: totalStudiedCards,
         totalMastered,
-        totalReviews: history.reduce((acc, curr) => acc + curr.reviews, 0)
+        totalReviews: totalReviewsAllTime
       },
       breakdown,
       history
@@ -96,5 +109,42 @@ export const getDeckStats = async (req, res) => {
   } catch (error) {
     console.error('Error fetching deck stats:', error);
     res.status(500).json({ message: 'Server error while fetching deck stats.' });
+  }
+};
+/**
+ * GET /api/stats/heatmap
+ * returns daily review and mastery counts for the last 6 months.
+ */
+export const getHeatmapData = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const sixMonthsAgo = new Date();
+    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+
+    const heatmap = await ReviewLog.aggregate([
+      { 
+        $match: { 
+          userId: new mongoose.Types.ObjectId(userId),
+          createdAt: { $gte: sixMonthsAgo }
+        } 
+      },
+      {
+        $group: {
+          _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+          reviews: { $sum: 1 },
+          mastery: { 
+            $sum: { 
+              $cond: [ { $eq: ["$statusAfter", "Mastered"] }, 1, 0 ] 
+            } 
+          }
+        }
+      },
+      { $sort: { "_id": 1 } }
+    ]);
+
+    res.status(200).json(heatmap);
+  } catch (error) {
+    console.error('Error fetching heatmap data:', error);
+    res.status(500).json({ message: 'Server error while fetching heatmap.' });
   }
 };

@@ -11,6 +11,7 @@ import ingestionRoutes from "./routes/ingestionRoutes.js";
 import reviewRoutes from "./routes/reviewRoutes.js";
 import deckRoutes from "./routes/deckRoutes.js";
 import statsRoutes from "./routes/statsRoutes.js";
+import noteRoutes from "./routes/noteRoutes.js";
 
 const app = express();
 
@@ -36,6 +37,7 @@ app.use("/api/ingestion", ingestionRoutes);
 app.use("/api/reviews", reviewRoutes);
 app.use("/api/decks", deckRoutes);
 app.use("/api/stats", statsRoutes);
+app.use("/api/notes", noteRoutes);
 
 
 const PORT = process.env.PORT || 5000;

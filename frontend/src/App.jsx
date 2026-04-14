@@ -10,6 +10,8 @@ import Layout from "./components/layout/Layout.jsx";
 import DashboardLayout from "./components/layout/DashboardLayout.jsx";
 import OverviewPage from "./pages/dashboard/OverviewPage.jsx";
 import FlashcardsPage from "./pages/dashboard/FlashcardsPage.jsx";
+import NotesPage from "./pages/dashboard/NotesPage.jsx";
+import NoteDetailView from "./pages/dashboard/NoteDetailView.jsx";
 import PlaceholderPage from "./pages/dashboard/PlaceholderPage.jsx";
 
 function App() {
@@ -29,6 +31,8 @@ function App() {
         <Route path="/dashboard" element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
           <Route index element={<OverviewPage />} />
           <Route path="flashcards" element={<FlashcardsPage />} />
+          <Route path="notes" element={<NotesPage />} />
+          <Route path="notes/:id" element={<NoteDetailView />} />
         </Route>
       </Routes>
     </>

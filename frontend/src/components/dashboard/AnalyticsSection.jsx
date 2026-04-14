@@ -4,6 +4,8 @@ import {
 } from 'recharts';
 import { motion } from 'framer-motion';
 import { FiTrendingUp, FiLayers, FiCalendar } from 'react-icons/fi';
+import MasteryHeatmap from './MasteryHeatmap';
+import LoadingSpinner from '../common/LoadingSpinner';
 
 const STATUS_COLORS = {
   Mastered: '#22c55e', // Green
@@ -12,25 +14,23 @@ const STATUS_COLORS = {
   New: '#94a3b8'        // Gray
 };
 
-const AnalyticsSection = ({ stats, loading }) => {
+const AnalyticsSection = ({ stats, loading, heatmapData, loadingHeatmap }) => {
   if (loading) {
-    return (
-      <div className="flex flex-col items-center justify-center py-20 gap-4">
-        <div className="w-12 h-12 border-4 border-black border-t-[#ffb800] animate-spin"></div>
-        <p className="font-black uppercase text-xs tracking-widest">Analyzing Patterns...</p>
-      </div>
-    );
+    return <LoadingSpinner message="Analyzing Patterns..." />;
   }
 
   if (!stats) return null;
 
-  const pieData = stats.breakdown.map(item => ({
+  const pieData = (stats?.breakdown || []).map(item => ({
     name: item._id,
     value: item.count
   }));
 
   return (
     <div className="space-y-8 pb-12">
+      {/* Dynamic Mastery Heatmap */}
+      <MasteryHeatmap data={heatmapData} loading={loadingHeatmap} />
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Learning Curve Area Chart */}
         <motion.div 

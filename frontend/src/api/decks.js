@@ -158,3 +158,17 @@ export const exportDeckAPI = async (deckId) => {
     throw new Error(error.response?.data?.message || error.message || 'Error occurred during export');
   }
 };
+/**
+ * Search decks by title OR flashcard content.
+ * @param {string} query - The search query
+ */
+export const searchDecksAPI = async (query) => {
+  try {
+    const response = await API.get(`/decks/search?q=${encodeURIComponent(query)}`, {
+      headers: getAuthHeaders()
+    });
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.message || error.message || 'Search failed');
+  }
+};

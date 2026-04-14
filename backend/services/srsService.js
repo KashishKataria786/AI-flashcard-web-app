@@ -31,8 +31,8 @@ export const calculateSM2 = (currentState, rating) => {
     }
     repetitions++;
 
-    // Check if mastered (arbitrary threshold based on interval)
-    if (interval > 30) {
+    // Check if mastered (Lowered threshold from 30 to 14 for better responsiveness)
+    if (interval >= 14) {
       status = 'Mastered';
     }
   }

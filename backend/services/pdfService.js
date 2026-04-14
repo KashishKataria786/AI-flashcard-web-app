@@ -22,11 +22,11 @@ export const extractTextFromPDF = async (buffer) => {
  * Uses natural sentence/paragraph boundaries for clean splits.
  * 
  * @param {string} text - Raw extracted text
- * @param {number} maxChars - Max characters per chunk (default 4000 ≈ ~1000 tokens)
+ * @param {number} maxChars - Max characters per chunk (default 3500 ≈ ~900 tokens)
  * @param {number} overlap - Overlap in chars to preserve context continuity
  * @returns {string[]} Array of text chunks
  */
-export const chunkText = (text, maxChars = 4000, overlap = 300) => {
+export const chunkText = (text, maxChars = 3500, overlap = 300) => {
   if (!text || text.length === 0) return [];
 
   const chunks = [];

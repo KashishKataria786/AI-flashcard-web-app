@@ -25,8 +25,15 @@ const StatsOverview = ({ stats, loading }) => {
           <FiCheckCircle className="w-6 h-6" />
         </div>
         <div>
-          <p className="text-[10px] font-black uppercase text-gray-400 tracking-widest">Mastered Cards</p>
-          <p className="text-3xl font-black italic">{stats.summary.totalMastered}</p>
+          <p className="text-[10px] font-black uppercase text-gray-400 tracking-widest">Mastery Level</p>
+          <div className="flex items-baseline gap-1">
+            <p className="text-3xl font-black italic">
+              {stats.summary.totalCards > 0 ? Math.round((stats.summary.totalMastered / stats.summary.totalCards) * 100) : 0}%
+            </p>
+            <p className="text-[10px] font-bold text-gray-400 uppercase italic">
+              ({stats.summary.totalStudied || 0}% Studied)
+            </p>
+          </div>
         </div>
       </div>
       

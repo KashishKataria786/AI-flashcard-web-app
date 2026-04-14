@@ -32,3 +32,16 @@ export const fetchDeckStatsAPI = async (deckId) => {
     throw new Error(error.response?.data?.message || error.message || 'Error occurred');
   }
 };
+/**
+ * Fetch heatmap data (last 6 months).
+ */
+export const fetchHeatmapAPI = async () => {
+  try {
+    const response = await API.get('/stats/heatmap', {
+      headers: getAuthHeaders()
+    });
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.message || error.message || 'Error occurred');
+  }
+};
